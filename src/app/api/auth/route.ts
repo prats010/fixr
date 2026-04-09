@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 import { checkPassword, login, logout } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    const staff = await prisma.staff.findUnique({
-      where: { email },
-      include: { hotel: true }
-    });
+    const { data: staff } = await supabase.from('Staff').select('*').eq('email', email).maybeSingle();
 
     // Check staff first
     if (staff && await checkPassword(password, staff.password)) {
@@ -18,9 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Check hotel owner fallback (for demo simplicity)
-    const hotel = await prisma.hotel.findUnique({
-      where: { ownerEmail: email }
-    });
+    const { data: hotel } = await supabase.from('Hotel').select('*').eq('ownerEmail', email).maybeSingle();
 
     if (hotel && await checkPassword(password, hotel.ownerPassword)) {
         await login(hotel.id, hotel.id, 'owner');

@@ -11,7 +11,7 @@ export default function AdminPage() {
   const [newRoom, setNewRoom] = useState('');
   
   // demo fixed layout
-  const hotelId = '82050ef4-0ef4-4a13-9c0a-1c1a911bf6c0';
+  const hotelId = '54e9fa70-9570-4510-85a1-011948a30420';
 
   const [staffForm, setStaffForm] = useState({ name: '', email: '', password: '', role: 'staff' });
 

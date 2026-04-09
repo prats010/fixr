@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
 
 export async function GET(request: Request) {
@@ -7,11 +7,9 @@ export async function GET(request: Request) {
   const hotelId = searchParams.get('hotelId');
   if (!hotelId) return NextResponse.json({ error: 'Missing hotelId' }, { status: 400 });
 
-  const staff = await prisma.staff.findMany({ 
-      where: { hotelId },
-      select: { id: true, name: true, email: true, role: true } 
-  });
-  return NextResponse.json(staff);
+  const { data: staff, error } = await supabase.from('Staff').select('id, name, email, role').eq('hotelId', hotelId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(staff || []);
 }
 
 export async function POST(request: Request) {
@@ -20,16 +18,15 @@ export async function POST(request: Request) {
     
     const hashed = await hashPassword(password);
 
-    const newStaff = await prisma.staff.create({
-      data: {
+    const { data: newStaff, error } = await supabase.from('Staff').insert([{
         hotelId,
         name,
         email,
         password: hashed,
         role: role || 'staff'
-      },
-      select: { id: true, name: true, email: true, role: true }
-    });
+    }]).select('id, name, email, role').maybeSingle();
+
+    if (error || !newStaff) throw new Error(error?.message || 'Failed to create staff');
 
     return NextResponse.json(newStaff, { status: 201 });
   } catch (error) {
@@ -42,6 +39,7 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     
-    await prisma.staff.delete({ where: { id } });
+    const { error } = await supabase.from('Staff').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
 }

@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
-    const complaint = await prisma.complaint.findUnique({
-      where: { id: params.id }
-    });
+    const { data: complaint, error } = await supabase.from('Complaint').select('*').eq('id', params.id).maybeSingle();
 
-    if (!complaint) {
+    if (error || !complaint) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
@@ -30,13 +28,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (staffId) updatedData.staffId = staffId;
     
     if (status === 'Resolved') {
-        updatedData.resolvedAt = new Date();
+        updatedData.resolvedAt = new Date().toISOString();
     }
 
-    const complaint = await prisma.complaint.update({
-      where: { id: params.id },
-      data: updatedData
-    });
+    const { data: complaint, error } = await supabase.from('Complaint').update(updatedData).eq('id', params.id).select().maybeSingle();
+
+    if (error) {
+      throw new Error(error.message);
+    }
 
     return NextResponse.json(complaint);
   } catch (error) {

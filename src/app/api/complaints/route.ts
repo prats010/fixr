@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 import { getResolutionSuggestion } from '@/lib/gemini';
 
 export async function POST(request: Request) {
@@ -12,9 +12,7 @@ export async function POST(request: Request) {
     }
 
     // Verify hotel and room exist
-    const roomRecord = await prisma.room.findFirst({
-      where: { hotelId, roomNumber: room }
-    });
+    const { data: roomRecord } = await supabase.from('Room').select('*').eq('hotelId', hotelId).eq('roomNumber', room).maybeSingle();
 
     if (!roomRecord) {
       return NextResponse.json({ error: 'Invalid room or hotel' }, { status: 404 });
@@ -24,8 +22,7 @@ export async function POST(request: Request) {
     const aiSuggestion = await getResolutionSuggestion(category, description);
 
     // Create complaint
-    const complaint = await prisma.complaint.create({
-      data: {
+    const { data: complaint, error } = await supabase.from('Complaint').insert([{
         hotelId,
         room,
         category,
@@ -33,8 +30,9 @@ export async function POST(request: Request) {
         guestName,
         status: 'New',
         aiSuggestion
-      }
-    });
+    }]).select().maybeSingle();
+
+    if (error || !complaint) throw new Error(error?.message || 'Failed to create');
 
     // Send SSE event
     try {
@@ -62,14 +60,13 @@ export async function GET(request: Request) {
   }
 
   try {
-    const complaints = await prisma.complaint.findMany({
-      where: {
-        hotelId,
-        ...(status ? { status } : {})
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    return NextResponse.json(complaints);
+    let query = supabase.from('Complaint').select('*').eq('hotelId', hotelId).order('createdAt', { ascending: false });
+    if (status) query = query.eq('status', status);
+
+    const { data: complaints, error } = await query;
+    if (error) throw new Error(error.message);
+
+    return NextResponse.json(complaints || []);
   } catch (error) {
     console.error('Error fetching complaints:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

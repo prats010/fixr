@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 import QRCode from 'qrcode';
 
 export async function GET(request: Request) {
@@ -7,8 +7,9 @@ export async function GET(request: Request) {
   const hotelId = searchParams.get('hotelId');
   if (!hotelId) return NextResponse.json({ error: 'Missing hotelId' }, { status: 400 });
 
-  const rooms = await prisma.room.findMany({ where: { hotelId } });
-  return NextResponse.json(rooms);
+  const { data: rooms, error } = await supabase.from('Room').select('*').eq('hotelId', hotelId);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(rooms || []);
 }
 
 export async function POST(request: Request) {
@@ -22,13 +23,13 @@ export async function POST(request: Request) {
     const link = `http://localhost:3000/complaint?room=${roomNumber}&hotel=${hotelId}`;
     const qrCode = await QRCode.toDataURL(link);
 
-    const room = await prisma.room.create({
-      data: {
+    const { data: room, error } = await supabase.from('Room').insert([{
         hotelId,
         roomNumber,
         qrCode
-      }
-    });
+    }]).select().maybeSingle();
+
+    if (error || !room) throw new Error(error?.message || 'Failed to create room');
 
     return NextResponse.json(room, { status: 201 });
   } catch (error) {
@@ -41,6 +42,7 @@ export async function DELETE(request: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     
-    await prisma.room.delete({ where: { id } });
+    const { error } = await supabase.from('Room').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
 }

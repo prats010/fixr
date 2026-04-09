@@ -20,7 +20,7 @@ export default function StaffDashboard() {
       const fetchInitial = async () => {
           try {
               // Quick hack for demo: get hotelId from first result or default
-              const res = await fetch('/api/complaints?hotelId=82050ef4-0ef4-4a13-9c0a-1c1a911bf6c0'); 
+              const res = await fetch('/api/complaints?hotelId=54e9fa70-9570-4510-85a1-011948a30420'); 
               if (res.ok) {
                   const data = await res.json();
                   const active = data.filter((c: any) => c.status !== 'Resolved');

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import supabase from '@/lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,9 +10,9 @@ export async function GET(request: Request) {
   }
 
   try {
-    const complaints = await prisma.complaint.findMany({
-      where: { hotelId }
-    });
+    const { data: complaintsData, error } = await supabase.from('Complaint').select('*').eq('hotelId', hotelId);
+    if (error) throw new Error(error.message);
+    const complaints = complaintsData || [];
 
     const total = complaints.length;
     const resolved = complaints.filter(c => c.status === 'Resolved').length;

@@ -31,7 +31,7 @@ export default function OwnerDashboard() {
     const fetchAnalytics = async () => {
       try {
         // Hardcoded demo hotel ID
-        const res = await fetch('/api/analytics?hotelId=82050ef4-0ef4-4a13-9c0a-1c1a911bf6c0');
+        const res = await fetch('/api/analytics?hotelId=54e9fa70-9570-4510-85a1-011948a30420');
         if (res.ok) setData(await res.json());
       } catch (e) {
         console.error(e);

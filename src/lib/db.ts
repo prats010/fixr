@@ -1,15 +1,12 @@
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js';
 
-const prismaClientSingleton = () => {
-  return new PrismaClient()
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('Supabase credentials missing. Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.');
 }
 
-declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>
-}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
-
-export default prisma
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+export default supabase;

@@ -42,7 +42,7 @@ export default function Home() {
                  <p className="text-muted text-sm">QR Code<br/>(See Admin)</p>
               </div>
           </div>
-          <Link href="/complaint?room=204&hotel=82050ef4-0ef4-4a13-9c0a-1c1a911bf6c0" className="btn btn-secondary">
+          <Link href="/complaint?room=204&hotel=54e9fa70-9570-4510-85a1-011948a30420" className="btn btn-secondary">
              Open Guest Form (Room 204)
           </Link>
       </div>
