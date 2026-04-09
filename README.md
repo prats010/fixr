@@ -1,6 +1,7 @@
 <div align="center">
   <h1>🏨 Fixr.</h1>
   <p><strong>AI-Powered Guest Complaint Management for Budget Hotels</strong></p>
+  <p>Created by <strong>Prathamesh Anil Bhamare</strong></p>
   <p>Resolve guest issues seamlessly. No app download. Instant front-desk updates. AI co-pilot resolution suggestions.</p>
   <br />
   <p>🌍 <strong>Live Demo:</strong> <a href="https://fixr-eight.vercel.app/">fixr-eight.vercel.app</a></p>
@@ -54,7 +55,7 @@ Guests simply scan a QR code placed in their room—no apps to download, no fric
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/fixr.git
+git clone https://github.com/prats010/fixr.git
 cd fixr
 ```
 
@@ -122,6 +123,11 @@ Fixr utilizes a secure, role-based JWT authentication system to segregate respon
 ## 🤝 Contributing
 
 Contributions are welcome! If you have suggestions for improving the AI co-pilot, refining the dashboard UI, or optimizing the Supabase queries, please feel free to fork the repository and submit a pull request.
+
+## 👨‍💻 Author
+
+**Prathamesh Anil Bhamare**
+* GitHub: [@prats010](https://github.com/prats010)
 
 ## 📄 License
 
