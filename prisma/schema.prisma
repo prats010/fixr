@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hotel {
+  id            String      @id @default(uuid())
+  name          String
+  slug          String      @unique
+  ownerEmail    String      @unique
+  ownerPassword String
+  createdAt     DateTime    @default(now())
+  rooms         Room[]
+  staff         Staff[]
+  complaints    Complaint[]
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  hotelId    String
+  roomNumber String
+  qrCode     String?  // Base64 encoded QR Code or URL
+  hotel      Hotel    @relation(fields: [hotelId], references: [id])
+}
+
+model Staff {
+  id            String      @id @default(uuid())
+  hotelId       String
+  name          String
+  email         String      @unique
+  password      String
+  role          String      // 'staff' or 'owner'
+  hotel         Hotel       @relation(fields: [hotelId], references: [id])
+  complaints    Complaint[]
+}
+
+model Complaint {
+  id            String    @id @default(uuid())
+  hotelId       String
+  room          String
+  category      String    // e.g., 'Hot Water', 'Wi-Fi', 'Cleanliness', 'Staff', 'Noise', 'Other'
+  description   String?
+  guestName     String?
+  status        String    @default("New") // 'New', 'In Progress', 'Resolved'
+  aiSuggestion  String?
+  staffAction   String?
+  staffId       String?   // User who resolved it
+  createdAt     DateTime  @default(now())
+  resolvedAt    DateTime?
+
+  hotel         Hotel     @relation(fields: [hotelId], references: [id])
+  resolvedBy    Staff?    @relation(fields: [staffId], references: [id])
+}
